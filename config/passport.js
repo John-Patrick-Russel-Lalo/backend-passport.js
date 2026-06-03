@@ -28,6 +28,7 @@ passport.use(
             username: profile.username,
             displayName: profile.displayName,
             avatar: profile.photos?.[0]?.value || null,
+            role: "user",
           });
         }
 
@@ -56,6 +57,7 @@ passport.use(
           providerId: profile.id,
           email: profile.emails?.[0]?.value || null,
           username: profile.emails?.[0]?.value || null,
+          role: "user",
           displayName: profile.displayName,
           avatar: profile.photos?.[0]?.value || null,
         });
@@ -85,6 +87,7 @@ passport.use(
             username: profile.emails?.[0]?.value || null,
             displayName: profile.displayName,
             avatar: profile.photos?.[0]?.value || null,
+            role: "user",
           });
         }
 

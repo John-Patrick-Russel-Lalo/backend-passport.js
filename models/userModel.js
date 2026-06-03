@@ -24,9 +24,10 @@ export async function createUser(user) {
             email,
             username,
             display_name,
+            role,
             avatar_url
         )
-        VALUES ($1, $2, $3, $4, $5, $6)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
         `,
         [
@@ -35,6 +36,7 @@ export async function createUser(user) {
             user.email,
             user.username,
             user.displayName,
+            user.role,
             user.avatar
         ]
     );
