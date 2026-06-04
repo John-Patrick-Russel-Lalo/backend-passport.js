@@ -51,16 +51,16 @@ export async function createUser(email, username, password) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const result = await pool.query(
-        `INSERT INTO usersNoProvider (email, username, password, role) values ($1, $2, $3, 'user') RETURNING *`,
-        [email, username, hashedPassword]
+        `INSERT INTO users (provider, email, username, password, role) values ($1, $2, $3, $4, $5) RETURNING *`,
+        ["local", email, username, hashedPassword, "user"]
     );
     return result.rows[0];
 }
 
 export async function loginUser(email, password) {
     const result = await pool.query(
-        `SELECT * FROM usersNoProvider WHERE email = $1`,
-        [email]
+        `SELECT * FROM users WHERE email = $1 AND provider = $2`,
+        [email, "local"]
     );
     const user = result.rows[0];
     if (!user) {
