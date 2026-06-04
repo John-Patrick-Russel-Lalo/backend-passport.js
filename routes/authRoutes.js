@@ -5,7 +5,7 @@ import { requireAuth } from "../middleware/authMiddleware.js";
 import { requireRole } from "../middleware/roleMiddleware.js";
 import { register } from "../controllers/authController.js";
 import { login } from "../controllers/authController.js";
-
+import jwt from "jsonwebtoken";
 
 const router = express.Router();
 
@@ -19,10 +19,33 @@ router.get(
 router.get(
   "/github/callback",
   passport.authenticate("github", {
-    failureRedirect: "http://localhost:5500/index.html"
+    failureRedirect: "http://localhost:5500/index.html",
+    session: false
   }),
   (req, res) => {
     console.log("GitHub callback successful, user:", req.user);
+
+    const token = jwt.sign(
+      {
+        id: req.user.id,
+        email: req.user.email,
+        username: req.user.username,
+        role: req.user.role
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h"
+      }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none"
+    });
+
+    console.log("Generated token:", token);
+
 
     res.redirect("http://localhost:5500");
   }
@@ -37,9 +60,31 @@ router.get(
   "/google/callback",
   passport.authenticate("google", {
     failureRedirect: "http://localhost:5500/index.html",
+    session: false
   }),
   (req, res) => {
     console.log("Google callback successful, user:", req.user);
+
+    const token = jwt.sign(
+      {
+        id: req.user.id,
+        email: req.user.email,
+        role: req.user.role
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h"
+      }
+    );
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none"
+    });
+
+    console.log("Generated token:", token);
+
     res.redirect("http://localhost:5500");
   }
 );
@@ -55,8 +100,31 @@ router.get(
   "/facebook/callback",
   passport.authenticate("facebook", {
     failureRedirect: "http://localhost:5500/index.html",
+    session: false
   }),
   (req, res) => {
+    
+    console.log("Facebook callback successful, user:", req.user);
+
+    const token = jwt.sign(
+      {
+        id: req.user.id,
+        email: req.user.email,
+        role: req.user.role
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h"
+      }
+    );
+
+    if (!token) {
+      return res.status(500).json({
+        message: "Internal server error"
+      });
+    }
+    console.log("Generated token:", token);
+
     res.redirect("http://localhost:5500");
   }
 );
@@ -66,26 +134,22 @@ router.post("/register", register);
 
 router.post("/login", login);
 
-router.get("/logout", (req, res, next) => {
+router.post("/logout", (req, res) => {
 
-  req.logout((err) => {
-
-    if (err) {
-      return next(err);
-    }
-
-    req.session.destroy((err) => {
-
-      if (err) {
-        return next(err);
-      }
-
-      res.clearCookie("sessionId");
-
-      return res.redirect("http://localhost:5500");
-    });
-
+  res.redirect("http://localhost:5500");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
   });
+
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
+
+
+  
 });
 
 

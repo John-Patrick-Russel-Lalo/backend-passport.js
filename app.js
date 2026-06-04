@@ -4,19 +4,12 @@ import session from "express-session";
 import passport from "./config/passport.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 
 const app = express();
 app.use(express.json());
-
-app.use(
-  session({
-    name: 'sessionId',
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false
-  })
-);
+app.use(cookieParser());
 
 
 app.use(
@@ -26,10 +19,6 @@ app.use(
   })
 );
 
-
-
-app.use(passport.initialize());
-app.use(passport.session());
 
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
